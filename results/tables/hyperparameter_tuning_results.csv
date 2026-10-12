@@ -1,0 +1,4 @@
+Model,Tuned_Parameters
+Random Forest,"{'n_estimators': 200, 'min_samples_split': 2, 'max_depth': 20}"
+XGBoost,"{'subsample': 0.8, 'n_estimators': 200, 'max_depth': 3, 'learning_rate': 0.15}"
+SVR,{'C': 5.0}
