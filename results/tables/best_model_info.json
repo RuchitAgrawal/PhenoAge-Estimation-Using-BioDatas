@@ -1,0 +1,12 @@
+{
+    "best_model_name": "Neural Network",
+    "metrics": {
+        "Model": "Neural Network",
+        "MAE": 2.8401,
+        "RMSE": 3.8643,
+        "R2": 0.964,
+        "Pearson_r": 0.9819,
+        "Spearman_r": 0.9843
+    },
+    "reasoning": "Selected 'Neural Network' as optimal model based on lowest test RMSE (3.8643 yrs) and MAE (2.8401 yrs), capturing 96.4% variance (Pearson r=0.9819)."
+}
