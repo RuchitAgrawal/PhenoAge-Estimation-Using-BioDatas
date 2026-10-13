@@ -1,0 +1,14 @@
+Feature,DisplayName,Native_Importance
+age,Chronological Age,0.8821781
+hba1c,Glycated Hemoglobin (HbA1c),0.026426971
+albumin_gL,Albumin (g/L),0.019674173
+lncreat_umol,log(Creatinine),0.018952131
+lymph,Lymphocyte Percent,0.016707554
+wbc,White Blood Cell Count (WBC),0.0133594675
+alp,Alkaline Phosphatase (ALP),0.0065644174
+lncrp,log(C-Reactive Protein),0.0059294268
+mcv,Mean Corpuscular Volume (MCV),0.004788582
+totchol,Total Cholesterol,0.001641782
+uap,Uric Acid,0.0013016089
+sbp,Systolic Blood Pressure,0.001281113
+bun,Blood Urea Nitrogen (BUN),0.0011946101
