@@ -1,0 +1,5 @@
+Model,Variable,HR,CI_Lo,CI_Hi,p_value,N,Events
+Univariate,ML Acceleration (per 1 yr),1.1002,1.0931,1.1073,<0.0001,26425,2181
+Multivariable (Adj Chrono Age),ML Acceleration (per 1 yr),1.0729,1.0658,1.08,<0.0001,26425,2181
+Multivariable (Adj Chrono Age),Chronological Age (per 1 yr),1.0888,1.0851,1.0925,<0.0001,26425,2181
+Baseline BioAge phenoage_advance0 (Adj Age),PhenoAge Advance (per 1 yr),1.064,1.0586,1.0695,<0.0001,26425,2181

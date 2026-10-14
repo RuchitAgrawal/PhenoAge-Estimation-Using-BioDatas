@@ -1,0 +1,13 @@
+Feature,Label,Mean_Abs_SHAP
+hba1c,HbA1c (%),6.261388
+sbp,Systolic BP (mmHg),4.815517
+bun,BUN (mg/dL),3.4922867
+albumin_gL,Albumin (g/L),3.0247355
+mcv,MCV (fL),2.9100323
+lymph,Lymphocyte %,2.6009636
+lncreat_umol,ln(Creatinine) (umol/L),2.4489439
+totchol,Total Cholesterol (mg/dL),0.95863646
+alp,Alkaline Phosphatase (U/L),0.92672414
+uap,Uric Acid (mg/dL),0.88255215
+wbc,WBC (10^3/uL),0.8020067
+lncrp,ln(CRP) (mg/dL),0.55292606

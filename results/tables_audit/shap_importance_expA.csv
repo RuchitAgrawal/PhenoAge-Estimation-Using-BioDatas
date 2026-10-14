@@ -1,0 +1,14 @@
+Feature,Label,Mean_Abs_SHAP
+age,Chronological Age,15.10182
+lncreat_umol,ln(Creatinine) (umol/L),1.6779048
+hba1c,HbA1c (%),1.5096673
+albumin_gL,Albumin (g/L),1.4755126
+lymph,Lymphocyte %,1.0957477
+wbc,WBC (10^3/uL),0.90130067
+mcv,MCV (fL),0.62609935
+alp,Alkaline Phosphatase (U/L),0.5921997
+lncrp,ln(CRP) (mg/dL),0.3702732
+totchol,Total Cholesterol (mg/dL),0.2517349
+sbp,Systolic BP (mmHg),0.16171326
+uap,Uric Acid (mg/dL),0.067046784
+bun,BUN (mg/dL),0.06651785

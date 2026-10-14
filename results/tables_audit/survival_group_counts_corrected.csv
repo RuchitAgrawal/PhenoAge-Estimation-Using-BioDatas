@@ -1,0 +1,4 @@
+accel_group,N,Deaths,Pct_Deaths
+Decelerated (D<-2yr),17414,1034,0.0594
+Congruent (-2<=D<=2yr),5399,521,0.0965
+Accelerated (D>+2yr),3612,626,0.1733

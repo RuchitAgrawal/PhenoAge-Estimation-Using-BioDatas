@@ -1,0 +1,15 @@
+Feature,NHANES_Variable,Description,Units,Transformation,PhenoAge_Input,Domain
+age,RIDAGEYR,Chronological age at interview,Years,None,False,Demographic
+albumin_gL,LBDSALSI,Serum albumin,g/L,None,True,Hepatic/Nutritional
+alp,LBXSAPSI,Alkaline phosphatase,U/L,None,True,Hepatic/Skeletal
+lncrp,LBXCRP,C-reactive protein (natural log),ln(mg/dL),ln(x),True,Inflammation
+totchol,LBXTC,Total cholesterol,mg/dL,None,False,Lipid/Cardiovascular
+lncreat_umol,LBDSCRAL,Serum creatinine (natural log),ln(umol/L),ln(x),True,Renal
+hba1c,LBXGH,Glycated haemoglobin,%,None,False,Glycemic
+sbp,BPXSY (avg),Systolic blood pressure,mmHg,None,False,Cardiovascular
+bun,LBDSBUSI,Blood urea nitrogen,mg/dL,None,False,Renal
+uap,LBDSUASI,Serum uric acid,mg/dL,None,False,Renal/Metabolic
+lymph,LBXLYPCT,Lymphocyte percentage,%,None,True,Immune/Hematology
+mcv,LBXMCVSI,Mean corpuscular volume,fL,None,True,Hematology
+wbc,LBXWBCSI,White blood cell count,10^3/uL,None,True,Immune/Inflammation
+phenoage0,Derived,Phenotypic Age (Levine 2018 formula applied to NHANES4),Years,Gompertz survival model,TARGET,Target Variable

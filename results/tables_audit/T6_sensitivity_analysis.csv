@@ -1,0 +1,5 @@
+Analysis,Model,HR,CI_Lo,CI_Hi,N
+Primary (Acceleration = predicted - chrono_age),Univariate Cox,1.1002,1.0931,1.1073,26425
+Primary (Acceleration = predicted - chrono_age),Adjusted for Chrono Age,1.0729,1.0658,1.08,26425
+Sensitivity (Age-adjusted residual),Univariate Cox,1.0732,1.0654,1.0811,26425
+Reference (phenoage_advance0),Adjusted for Chrono Age,1.064,1.0586,1.0695,26425
