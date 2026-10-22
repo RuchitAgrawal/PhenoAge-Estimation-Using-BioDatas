@@ -1,4 +1,5 @@
 import os
+import pathlib
 import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr, spearmanr
@@ -8,7 +9,11 @@ import seaborn as sns
 
 plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
 
-def evaluate_models(models_dict, x_test, y_test, exp_name="A"):
+PACKAGE_DIR = pathlib.Path(__file__).resolve().parent.parent
+DEFAULT_TABLES_DIR = PACKAGE_DIR / "results" / "tables"
+DEFAULT_FIGURES_DIR = PACKAGE_DIR / "results" / "figures"
+
+def evaluate_models(models_dict, x_test, y_test, exp_name="A", out_dir=None):
     rows = []
     preds = {}
     
@@ -33,9 +38,9 @@ def evaluate_models(models_dict, x_test, y_test, exp_name="A"):
         })
         
     df_res = pd.DataFrame(rows)
-    out_dir = "results/tables"
-    os.makedirs(out_dir, exist_ok=True)
-    df_res.to_csv(os.path.join(out_dir, f"model_comparison_exp_{exp_name}.csv"), index=False)
+    target_out_dir = pathlib.Path(out_dir) if out_dir else DEFAULT_TABLES_DIR
+    target_out_dir.mkdir(parents=True, exist_ok=True)
+    df_res.to_csv(target_out_dir / f"model_comparison_exp_{exp_name}.csv", index=False)
     return df_res, preds
 
 def identify_best_model(res_df):
