@@ -1,4 +1,5 @@
 import os
+import pathlib
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,10 +8,15 @@ from lifelines.statistics import logrank_test
 
 plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
 
-def run_survival_analysis(test_df, y_pred, output_dir="results/figures"):
-    os.makedirs(output_dir, exist_ok=True)
-    out_tables = "results/tables"
-    os.makedirs(out_tables, exist_ok=True)
+PACKAGE_DIR = pathlib.Path(__file__).resolve().parent.parent
+DEFAULT_TABLES_DIR = PACKAGE_DIR / "results" / "tables"
+DEFAULT_FIGURES_DIR = PACKAGE_DIR / "results" / "figures"
+
+def run_survival_analysis(test_df, y_pred, output_dir=None, tables_dir=None):
+    fig_dir = pathlib.Path(output_dir) if output_dir else DEFAULT_FIGURES_DIR
+    tab_dir = pathlib.Path(tables_dir) if tables_dir else DEFAULT_TABLES_DIR
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    tab_dir.mkdir(parents=True, exist_ok=True)
     
     surv_data = test_df.copy()
     surv_data["pred_bioage"] = y_pred
@@ -55,7 +61,7 @@ def run_survival_analysis(test_df, y_pred, output_dir="results/figures"):
     ax.set_ylim(0.4, 1.02)
     ax.legend(loc="lower left")
     plt.tight_layout()
-    fig.savefig(os.path.join(output_dir, "15_kaplan_meier_survival_curves.png"))
+    fig.savefig(fig_dir / "15_kaplan_meier_survival_curves.png")
     plt.close()
     
     # 2. Cox Proportional Hazards regression
@@ -82,15 +88,7 @@ def run_survival_analysis(test_df, y_pred, output_dir="results/figures"):
     ci2_age_up = float(np.exp(cph2.confidence_intervals_.loc["age", "95% upper-bound"]))
     p2_age = cph2.summary.loc["age", "p"]
     
-    # baseline BioAge PhenoAge advance reference
-    cph_ref = CoxPHFitter()
-    cph_ref.fit(cohort[["time", "status", "phenoage_advance0", "age"]], duration_col="time", event_col="status")
-    hr_ref = float(np.exp(cph_ref.params_["phenoage_advance0"]))
-    ci_ref_low = float(np.exp(cph_ref.confidence_intervals_.loc["phenoage_advance0", "95% lower-bound"]))
-    ci_ref_up = float(np.exp(cph_ref.confidence_intervals_.loc["phenoage_advance0", "95% upper-bound"]))
-    p_ref = cph_ref.summary.loc["phenoage_advance0", "p"]
-    
-    cox_df = pd.DataFrame([
+    cox_records = [
         {
             "Model": "Univariate Bio-Age Acceleration",
             "Variable": "bio_age_acceleration (per 1 yr)",
@@ -114,17 +112,31 @@ def run_survival_analysis(test_df, y_pred, output_dir="results/figures"):
             "CI_95_Lower": round(ci2_age_low, 4),
             "CI_95_Upper": round(ci2_age_up, 4),
             "p_value": "< 0.0001" if p2_age < 1e-4 else round(p2_age, 4)
-        },
-        {
-            "Model": "Baseline BioAge phenoage_advance0 (Adjusted)",
-            "Variable": "phenoage_advance0 (per 1 yr)",
-            "Hazard_Ratio": round(hr_ref, 4),
-            "CI_95_Lower": round(ci_ref_low, 4),
-            "CI_95_Upper": round(ci_ref_up, 4),
-            "p_value": "< 0.0001" if p_ref < 1e-4 else round(p_ref, 4)
         }
-    ])
-    cox_df.to_csv(os.path.join(out_tables, "survival_cox_models.csv"), index=False)
+    ]
+    
+    # baseline BioAge PhenoAge advance reference (guarded if column exists)
+    if "phenoage_advance0" in cohort.columns:
+        try:
+            cph_ref = CoxPHFitter()
+            cph_ref.fit(cohort[["time", "status", "phenoage_advance0", "age"]], duration_col="time", event_col="status")
+            hr_ref = float(np.exp(cph_ref.params_["phenoage_advance0"]))
+            ci_ref_low = float(np.exp(cph_ref.confidence_intervals_.loc["phenoage_advance0", "95% lower-bound"]))
+            ci_ref_up = float(np.exp(cph_ref.confidence_intervals_.loc["phenoage_advance0", "95% upper-bound"]))
+            p_ref = cph_ref.summary.loc["phenoage_advance0", "p"]
+            cox_records.append({
+                "Model": "Baseline BioAge phenoage_advance0 (Adjusted)",
+                "Variable": "phenoage_advance0 (per 1 yr)",
+                "Hazard_Ratio": round(hr_ref, 4),
+                "CI_95_Lower": round(ci_ref_low, 4),
+                "CI_95_Upper": round(ci_ref_up, 4),
+                "p_value": "< 0.0001" if p_ref < 1e-4 else round(p_ref, 4)
+            })
+        except Exception as e:
+            print(f"  [survival] Notice: baseline reference model skipped ({e})")
+            
+    cox_df = pd.DataFrame(cox_records)
+    cox_df.to_csv(tab_dir / "survival_cox_models.csv", index=False)
     
     # 3. Forest plot
     fig, ax = plt.subplots(figsize=(8.5, 4), dpi=300)
@@ -142,7 +154,9 @@ def run_survival_analysis(test_df, y_pred, output_dir="results/figures"):
     ax.set_xlabel("Mortality Hazard Ratio (HR with 95% CI)")
     ax.set_title("Cox Proportional Hazards: Biological Acceleration Effect", fontweight="bold")
     plt.tight_layout()
-    fig.savefig(os.path.join(output_dir, "16_cox_hazard_ratios_forest_plot.png"))
+    fig.savefig(fig_dir / "16_cox_hazard_ratios_forest_plot.png")
     plt.close()
+    
+    return cox_df, lr
     
     return cox_df, lr
