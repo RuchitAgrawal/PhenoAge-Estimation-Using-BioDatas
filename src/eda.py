@@ -1,4 +1,5 @@
 import os
+import pathlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -6,10 +7,15 @@ import numpy as np
 
 plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
 
-def run_eda(df, missing_df=None, output_dir="results/figures"):
-    os.makedirs(output_dir, exist_ok=True)
-    out_tables = "results/tables"
-    os.makedirs(out_tables, exist_ok=True)
+PACKAGE_DIR = pathlib.Path(__file__).resolve().parent.parent
+DEFAULT_TABLES_DIR = PACKAGE_DIR / "results" / "tables"
+DEFAULT_FIGURES_DIR = PACKAGE_DIR / "results" / "figures"
+
+def run_eda(df, missing_df=None, output_dir=None, tables_dir=None):
+    fig_dir = pathlib.Path(output_dir) if output_dir else DEFAULT_FIGURES_DIR
+    tab_dir = pathlib.Path(tables_dir) if tables_dir else DEFAULT_TABLES_DIR
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    tab_dir.mkdir(parents=True, exist_ok=True)
     
     # 1. PhenoAge target histogram
     fig, ax = plt.subplots(figsize=(7.5, 4.8), dpi=300)
@@ -21,7 +27,7 @@ def run_eda(df, missing_df=None, output_dir="results/figures"):
     ax.set_ylabel("Count")
     ax.legend()
     plt.tight_layout()
-    fig.savefig(os.path.join(output_dir, "01_target_distribution.png"))
+    fig.savefig(fig_dir / "01_target_distribution.png")
     plt.close()
     
     # 2. Chrono Age vs PhenoAge scatter
@@ -41,7 +47,7 @@ def run_eda(df, missing_df=None, output_dir="results/figures"):
     ax.set_ylabel("Phenotypic Biological Age (Years)")
     ax.legend(loc="lower right")
     plt.tight_layout()
-    fig.savefig(os.path.join(output_dir, "02_chronological_vs_biological_age.png"))
+    fig.savefig(fig_dir / "02_chronological_vs_biological_age.png")
     plt.close()
     
     # 3. 12-analyte distribution grid
@@ -65,20 +71,20 @@ def run_eda(df, missing_df=None, output_dir="results/figures"):
         ax_i.set_ylabel("")
     plt.suptitle("Clinical Biomarker Distributions across NHANES Cohort", fontweight="bold", y=0.99)
     plt.tight_layout()
-    fig.savefig(os.path.join(output_dir, "03_biomarker_distributions.png"))
+    fig.savefig(fig_dir / "03_biomarker_distributions.png")
     plt.close()
     
     # 4. Correlation heatmap
     cols = ["age"] + biomarkers + ["phenoage0"]
     c_mat = df[cols].corr()
-    c_mat.to_csv(os.path.join(out_tables, "correlation_matrix.csv"))
+    c_mat.to_csv(tab_dir / "correlation_matrix.csv")
     
     fig, ax = plt.subplots(figsize=(10.5, 8.5), dpi=300)
     sns.heatmap(c_mat, annot=True, fmt=".2f", cmap="coolwarm", center=0,
                 square=True, linewidths=0.5, ax=ax, annot_kws={"size": 7.5})
     ax.set_title("Biomarker Correlation Matrix (Pearson)", fontweight="bold", pad=12)
     plt.tight_layout()
-    fig.savefig(os.path.join(output_dir, "04_correlation_heatmap.png"))
+    fig.savefig(fig_dir / "04_correlation_heatmap.png")
     plt.close()
     
     # 5. Missing values breakdown
@@ -93,5 +99,5 @@ def run_eda(df, missing_df=None, output_dir="results/figures"):
             ax.text(val + 0.4, b.get_y() + b.get_height()/2, f"{val:.1f}%", va="center", fontsize=8.5)
         ax.set_xlim(0, max(s_df["Missing_Percentage"]) + 5)
         plt.tight_layout()
-        fig.savefig(os.path.join(output_dir, "05_missing_values_analysis.png"))
+        fig.savefig(fig_dir / "05_missing_values_analysis.png")
         plt.close()
