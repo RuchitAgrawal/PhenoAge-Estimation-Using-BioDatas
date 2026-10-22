@@ -1,4 +1,5 @@
 import os
+import pathlib
 import joblib
 import numpy as np
 import pandas as pd
@@ -10,6 +11,10 @@ from sklearn.model_selection import KFold, cross_validate, RandomizedSearchCV
 from xgboost import XGBRegressor
 
 SEED = 42
+
+PACKAGE_DIR = pathlib.Path(__file__).resolve().parent.parent
+DEFAULT_TABLES_DIR = PACKAGE_DIR / "results" / "tables"
+DEFAULT_MODELS_DIR = PACKAGE_DIR / "results" / "models"
 
 def build_model_dict():
     # baseline linear + tree ensembles + svm + simple neural net
@@ -126,16 +131,17 @@ def tune_hyperparameters(x_train, y_train):
     svr_search.fit(x_sub, y_sub)
     best_params["SVR"] = svr_search.best_params_
     
-    out_dir = "results/tables"
-    os.makedirs(out_dir, exist_ok=True)
+    target_out_dir = pathlib.Path(out_dir) if out_dir else DEFAULT_TABLES_DIR
+    target_out_dir.mkdir(parents=True, exist_ok=True)
     pd.DataFrame(list(best_params.items()), columns=["Model", "Tuned_Parameters"]).to_csv(
-        os.path.join(out_dir, "hyperparameter_tuning_results.csv"), index=False
+        target_out_dir / "hyperparameter_tuning_results.csv", index=False
     )
     return best_params
 
-def train_and_save_all(models, x_train, y_train, exp_name="A"):
-    out_dir = os.path.join("results/models", f"exp_{exp_name}")
-    os.makedirs(out_dir, exist_ok=True)
+def train_and_save_all(models, x_train, y_train, exp_name="A", base_models_dir=None):
+    target_base = pathlib.Path(base_models_dir) if base_models_dir else DEFAULT_MODELS_DIR
+    out_dir = target_base / f"exp_{exp_name}"
+    out_dir.mkdir(parents=True, exist_ok=True)
     
     trained = {}
     for name, clf in models.items():
@@ -143,5 +149,5 @@ def train_and_save_all(models, x_train, y_train, exp_name="A"):
         clf.fit(x_train, y_train)
         trained[name] = clf
         fname = name.lower().replace(" ", "_") + ".joblib"
-        joblib.dump(clf, os.path.join(out_dir, fname))
+        joblib.dump(clf, out_dir / fname)
     return trained
