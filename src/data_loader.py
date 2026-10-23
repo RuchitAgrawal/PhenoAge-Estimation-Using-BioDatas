@@ -1,65 +1,60 @@
 import os
+import logging
+from pathlib import Path
 import joblib
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-SEED = 42
+from .config import (
+    SEED,
+    TEST_SIZE,
+    FEATURES_A,
+    FEATURES_B,
+    TARGET,
+    MODELS_DIR,
+    NHANES_CORE_CSV
+)
 
-# 13 features for Experiment A (includes chronological age)
-FEATURES_A = [
-    "age", "albumin_gL", "alp", "lncrp", "totchol", 
-    "lncreat_umol", "hba1c", "sbp", "bun", "uap", 
-    "lymph", "mcv", "wbc"
-]
-
-# 12 biomarkers for Experiment B (age removed to test pure biological signal)
-FEATURES_B = [f for f in FEATURES_A if f != "age"]
-
-PACKAGE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-TARGET = "phenoage0"
+logger = logging.getLogger(__name__)
 
 def load_data(filepath=None):
-    if filepath is None:
-        filepath = os.path.join(PACKAGE_DIR, "data", "processed", "nhanes4_core_35723.csv")
-    elif not os.path.isabs(filepath) and not os.path.exists(filepath):
-        cand = os.path.join(PACKAGE_DIR, filepath)
-        if os.path.exists(cand):
-            filepath = cand
-            
-    if not os.path.exists(filepath):
-        raise FileNotFoundError(f"Missing processed data file: {filepath}")
-    return pd.read_csv(filepath)
+    """Load core processed NHANES dataset."""
+    target_path = Path(filepath) if filepath else NHANES_CORE_CSV
+    if not target_path.exists():
+        raise FileNotFoundError(f"Missing processed data file: {target_path}")
+    df = pd.read_csv(target_path)
+    logger.info(f"Loaded cohort data with shape {df.shape} from {target_path.name}")
+    return df
 
-def prepare_splits(df, test_size=0.2, seed=SEED, out_dir=None):
-    # standard 80/20 train-test split
+def prepare_splits(df, test_size=TEST_SIZE, seed=SEED, out_dir=None):
+    """Partition dataset into leakage-free train and holdout test splits."""
     train, test = train_test_split(df, test_size=test_size, random_state=seed)
     
-    if out_dir is None:
-        out_dir = os.path.join(PACKAGE_DIR, "results", "models")
-    os.makedirs(out_dir, exist_ok=True)
+    target_out = Path(out_dir) if out_dir else MODELS_DIR
+    target_out.mkdir(parents=True, exist_ok=True)
     
-    # save row indices so we can always map predictions back to participants
-    np.save(os.path.join(out_dir, "train_indices.npy"), train.index.values)
-    np.save(os.path.join(out_dir, "test_indices.npy"), test.index.values)
+    # Save partition row indices for full participant mapping
+    np.save(target_out / "train_indices.npy", train.index.values)
+    np.save(target_out / "test_indices.npy", test.index.values)
     
     y_train = train[TARGET].values
     y_test = test[TARGET].values
     
-    # --- Setting A: Chrono Age + Biomarkers ---
+    # --- Setting A: Chronological Age + 12 Biomarkers ---
     scaler_a = StandardScaler()
     x_train_a = scaler_a.fit_transform(train[FEATURES_A].values)
     x_test_a = scaler_a.transform(test[FEATURES_A].values)
-    joblib.dump(scaler_a, os.path.join(out_dir, "scaler_A.joblib"))
+    joblib.dump(scaler_a, target_out / "scaler_A.joblib")
     
-    # --- Setting B: Biomarkers only ---
+    # --- Setting B: 12 Biomarkers only ---
     scaler_b = StandardScaler()
     x_train_b = scaler_b.fit_transform(train[FEATURES_B].values)
     x_test_b = scaler_b.transform(test[FEATURES_B].values)
-    joblib.dump(scaler_b, os.path.join(out_dir, "scaler_B.joblib"))
+    joblib.dump(scaler_b, target_out / "scaler_B.joblib")
     
+    logger.info(f"Prepared splits: Train N={len(train):,} | Test N={len(test):,}")
     return {
         "train_df": train,
         "test_df": test,
