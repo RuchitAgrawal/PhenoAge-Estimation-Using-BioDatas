@@ -87,18 +87,33 @@ if not os.path.exists(os.path.join(BASE_DIR, "results", "models", "scaler_A.jobl
 MODELS_DIR = os.path.join(BASE_DIR, "results/models/exp_A")
 SCALER_PATH = os.path.join(BASE_DIR, "results/models/scaler_A.joblib")
 
-@st.cache_resource
+@st.cache_resource(show_spinner="Loading pre-trained model weights & clinical scaler...")
 def load_models_and_scaler():
-    """Load pre-trained models and standardization scaler."""
+    """Load pre-trained models and standardization scaler with graceful fallbacks."""
+    if not os.path.exists(SCALER_PATH):
+        raise FileNotFoundError(f"Scaler not found at {SCALER_PATH}")
     scaler = joblib.load(SCALER_PATH)
-    models = {
-        "Neural Network (MLP - Best Performer)": joblib.load(os.path.join(MODELS_DIR, "neural_network.joblib")),
-        "XGBoost Regressor": joblib.load(os.path.join(MODELS_DIR, "xgboost.joblib")),
-        "Gradient Boosting Regressor": joblib.load(os.path.join(MODELS_DIR, "gradient_boosting.joblib")),
-        "Random Forest Regressor": joblib.load(os.path.join(MODELS_DIR, "random_forest.joblib")),
-        "Linear Regression (Baseline)": joblib.load(os.path.join(MODELS_DIR, "linear_regression.joblib")),
-        "Support Vector Regressor (SVR)": joblib.load(os.path.join(MODELS_DIR, "svr.joblib"))
-    }
+    
+    candidates = [
+        ("Neural Network (MLP - Best Performer)", "neural_network.joblib"),
+        ("XGBoost Regressor", "xgboost.joblib"),
+        ("Gradient Boosting Regressor", "gradient_boosting.joblib"),
+        ("Random Forest Regressor", "random_forest.joblib"),
+        ("Linear Regression (Baseline)", "linear_regression.joblib"),
+        ("Support Vector Regressor (SVR)", "svr.joblib")
+    ]
+    
+    models = {}
+    for display_name, fname in candidates:
+        m_path = os.path.join(MODELS_DIR, fname)
+        if os.path.exists(m_path):
+            try:
+                models[display_name] = joblib.load(m_path)
+            except Exception:
+                pass
+                
+    if not models:
+        raise FileNotFoundError(f"No valid model artifacts discovered in {MODELS_DIR}")
     return models, scaler
 
 try:
