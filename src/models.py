@@ -50,10 +50,12 @@ def build_model_dict():
             n_jobs=-1
         ),
         "Neural Network": MLPRegressor(
-            hidden_layer_sizes=(64, 32),
+            hidden_layer_sizes=(128, 64, 32),
             activation="relu",
-            max_iter=150,
+            max_iter=500,
             early_stopping=True,
+            validation_fraction=0.1,
+            n_iter_no_change=15,
             random_state=SEED
         )
     }
