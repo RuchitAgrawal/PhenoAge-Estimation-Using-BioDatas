@@ -2,6 +2,14 @@
 Pytest test fixtures providing reproducible synthetic cohort partitions.
 """
 
+import sys
+from pathlib import Path
+
+# Add repository root to Python path so `src` is always importable by pytest
+REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 import pytest
 import numpy as np
 import pandas as pd
