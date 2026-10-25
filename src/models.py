@@ -85,7 +85,7 @@ def run_cross_validation(models, x_train, y_train, cv_folds=5):
         })
     return pd.DataFrame(rows)
 
-def tune_hyperparameters(x_train, y_train):
+def tune_hyperparameters(x_train, y_train, out_dir=None):
     print("  [tuning] running randomized search on subsample...")
     # subsample 12k rows to keep search runtime under 1-2 mins while preserving distribution
     rng = np.random.RandomState(SEED)

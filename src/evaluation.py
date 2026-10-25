@@ -55,8 +55,9 @@ def identify_best_model(res_df):
     )
     return best_name, top.to_dict(), summary
 
-def plot_evaluation_diagnostics(y_true, y_pred, model_name, output_dir="results/figures", prefix="06"):
-    os.makedirs(output_dir, exist_ok=True)
+def plot_evaluation_diagnostics(y_true, y_pred, model_name, output_dir=None, prefix="06"):
+    fig_dir = pathlib.Path(output_dir) if output_dir else DEFAULT_FIGURES_DIR
+    fig_dir.mkdir(parents=True, exist_ok=True)
     resid = y_true - y_pred
     
     # subsample points for scatter plots to prevent overplotting
@@ -82,7 +83,7 @@ def plot_evaluation_diagnostics(y_true, y_pred, model_name, output_dir="results/
             transform=ax.transAxes, bbox=dict(facecolor="white", alpha=0.85, edgecolor="#ccc"))
     ax.legend(loc="lower right")
     plt.tight_layout()
-    fig.savefig(os.path.join(output_dir, f"{prefix}_actual_vs_predicted.png"))
+    fig.savefig(fig_dir / f"{prefix}_actual_vs_predicted.png")
     plt.close()
     
     # 2. Residuals vs Predicted
@@ -93,7 +94,7 @@ def plot_evaluation_diagnostics(y_true, y_pred, model_name, output_dir="results/
     ax.set_xlabel("Predicted PhenoAge (Years)")
     ax.set_ylabel("Residual (Actual - Predicted)")
     plt.tight_layout()
-    fig.savefig(os.path.join(output_dir, f"{prefix}_residuals_plot.png"))
+    fig.savefig(fig_dir / f"{prefix}_residuals_plot.png")
     plt.close()
     
     # 3. Residual histogram
